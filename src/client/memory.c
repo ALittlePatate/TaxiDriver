@@ -41,11 +41,15 @@ void *RPM(uintptr_t address, ssize_t size)
     return (void *)args.out;
 }
 
-void WPM(t_WPM args)
+void WPM(uintptr_t addr, uintptr_t value, ssize_t size)
 {
+    struct s_WPM args_wpm;
+    args_wpm.addr = addr;
+    args_wpm.size = size;
+    args_wpm.value = value;
     int ret;
     
-    ret = ioctl(file_desc, IOCTL_WPM, &args);
+    ret = ioctl(file_desc, IOCTL_WPM, &args_wpm);
     if (ret < 0) {
         perror("Revird: WPM failed.");
         close(file_desc);
