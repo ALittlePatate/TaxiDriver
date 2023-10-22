@@ -1,4 +1,5 @@
 #include <linux/init.h>
+#include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/kernel.h>
@@ -20,6 +21,26 @@ static int device_open(struct inode *inode, struct file *file)
 static int device_release(struct inode *inode, struct file *file)
 {
     return 0;
+}
+
+int RPM(t_RPM args) {
+    struct mm_struct *mm;
+    unsigned long value = 0;
+
+    printk(KERN_ALERT "TaxiDriver: RPM --> addr : 0x%lx, size : %ld\n", rpm_args.addr, rpm_args.size);
+    if (args.addr == 0)
+	return -1;
+    mm = get_task_mm(task);
+    if (mm != NULL) {
+        if (access_process_vm(task, args.addr, &value, args.size, 0) == args.size) {
+	    printk(KERN_INFO "TaxiDriver: Value at 0x%lx: %lu\n", args.addr, value);
+	    mmput(mm);
+	} else {
+	    printk(KERN_INFO "TaxiDriver: Failed to read value at 0x%lx\n", args.addr);
+	    return -1;
+	}
+    }
+    return (int)value;
 }
 
 static int init_process_by_pid(int target_pid) {
@@ -64,8 +85,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
         case IOCTL_RPM:
             if (copy_from_user(&rpm_args, (int *)arg, sizeof(t_RPM)))
                 return -EFAULT;
-	    printk(KERN_ALERT "TaxiDriver: RPM --> addr : %ld, size : %ld\n", rpm_args.addr, rpm_args.size);
-	    return_value = 1337;
+	    return_value = RPM(rpm_args);
             break;
 
         case IOCTL_WPM:
