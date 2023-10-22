@@ -5,6 +5,8 @@
 #include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/uaccess.h>
+#include <linux/sched/signal.h>
+#include <linux/maple_tree.h>
 
 #define DRIVER_NAME "TaxiDriver"
 #define DRIVER
@@ -72,6 +74,23 @@ int WPM(t_WPM args) {
     return ret;
 }
 
+static uintptr_t list_process_modules(const char *mod) {
+    struct mm_struct *mm = task->mm;
+    struct vm_area_struct *vma;
+    VMA_ITERATOR(vmi, mm, 0);
+
+    for_each_vma(vmi, vma) {	
+	if (vma->vm_file) {
+            struct file *file = vma->vm_file;
+            printk(KERN_INFO "TaxiDriver: Shared Library: %s start: 0x%lx end: 0x%lx\n",
+		   file->f_path.dentry->d_name.name, vma->vm_start, vma->vm_end);
+	    if (strcmp(file->f_path.dentry->d_name.name, mod) == 0)
+		return (uintptr_t)vma->vm_start;
+        }
+    }
+    return 0;
+}
+
 static int init_process_by_pid(int target_pid) {
     printk(KERN_INFO "TaxiDriver: Accessing process with PID: %d\n", target_pid);
 
@@ -82,7 +101,6 @@ static int init_process_by_pid(int target_pid) {
         if (task != NULL) {
             const char *process_name = task->comm;
             printk(KERN_INFO "TaxiDriver: Process with PID %d has name: %s\n", target_pid, process_name);
-            // Access and manipulate the process here
             put_task_struct(task);
         } else {
             printk(KERN_INFO "TaxiDriver: Process with PID %d not found\n", target_pid);
@@ -101,10 +119,20 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
 {
     struct s_WPM wpm_args;
     struct s_RPM rpm_args;
+    const char *mod = kmalloc(sizeof(char) * 256, GFP_KERNEL);
+    if (!mod)
+	return -ENOMEM;
     int pid;
-    int return_value = 0;
+    long return_value = 0;
 
     switch (ioctl_num) {
+        case IOCTL_GETMODULE:
+            if (copy_from_user((void *)mod, (int *)arg, sizeof(char *)))
+                return -EFAULT;
+	    return_value = list_process_modules(mod);
+	    kfree(mod);
+            break;
+	    
         case IOCTL_OPENPROC:
             if (copy_from_user(&pid, (int *)arg, sizeof(int)))
                 return -EFAULT;
@@ -115,6 +143,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
             if (copy_from_user(&rpm_args, (int *)arg, sizeof(t_RPM)))
                 return -EFAULT;
 	    return_value = RPM(rpm_args);
+	    put_user(return_value, rpm_args.out_addr);
             break;
 
         case IOCTL_WPM:

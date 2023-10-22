@@ -1,4 +1,6 @@
 #include "memory.h"
+#include "communication_struct.h"
+#include <stdio.h>
 #include <sys/ioctl.h>
 #include <stdint.h>
 #include <fcntl.h>
@@ -22,17 +24,21 @@ void close_device(void)
     close(file_desc);
 }
 
-void *RPM(t_RPM args)
+void *RPM(uintptr_t address, ssize_t size) 
 {
-    int ret;
+    struct s_RPM args;
+    args.addr = address;
+    args.size = size;
+    args.out = 0;
+    args.out_addr = &args.out;
     
-    ret = ioctl(file_desc, IOCTL_RPM, &args);
+    int ret = ioctl(file_desc, IOCTL_RPM, &args);
     if (ret < 0) {
         perror("Revird: RPM failed.");
         close(file_desc);
         return 0;
     }
-    return (void *)ret;
+    return (void *)args.out;
 }
 
 void WPM(t_WPM args)
@@ -59,4 +65,16 @@ int open_process(int pid)
         return -1;
     }
     return 1;
+}
+
+uintptr_t get_module(const char *mod)
+{
+    int ret = ioctl(file_desc, IOCTL_GETMODULE, mod);
+    if (ret < 0) {
+        perror("Revird: getmodule failed.");
+        close(file_desc);
+        return -1;
+    }
+
+    return ret;
 }
