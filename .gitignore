@@ -1,0 +1,7 @@
+*.order
+*.symvers
+Revird
+*.ko
+TaxiDriver.mod.c
+*.o
+*.cmd
