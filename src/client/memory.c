@@ -112,5 +112,6 @@ uintptr_t get_module(const char *mod)
         return -1;
     }
 
-    return ret;
+    uintptr_t addr = (uintptr_t)RPM(0x69420, 0);
+    return addr;
 }

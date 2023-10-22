@@ -122,6 +122,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
     const char *mod = kmalloc(sizeof(char) * 256, GFP_KERNEL);
     if (!mod)
 	return -ENOMEM;
+    static uintptr_t addr = 0;
     int pid;
     long return_value = 0;
 
@@ -130,6 +131,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
             if (copy_from_user((void *)mod, (int *)arg, sizeof(char *)))
                 return -EFAULT;
 	    return_value = list_process_modules(mod);
+	    addr = return_value;
 	    kfree(mod);
             break;
 	    
@@ -142,6 +144,10 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
         case IOCTL_RPM:
             if (copy_from_user(&rpm_args, (int *)arg, sizeof(t_RPM)))
                 return -EFAULT;
+	    if (rpm_args.addr == 0x69420) {
+		put_user(addr, rpm_args.out_addr);
+		break;
+	    }
 	    return_value = RPM(rpm_args);
 	    put_user(return_value, rpm_args.out_addr);
             break;
