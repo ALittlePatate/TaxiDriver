@@ -5,7 +5,7 @@ int main() {
     if (!open_device())
 	return -1;
 
-    int pid = 55803;
+    int pid = get_pid("nsnake");
     if (!open_process(pid))
 	return -1;
     

@@ -24,6 +24,38 @@ void close_device(void)
     close(file_desc);
 }
 
+int get_pid(const char *program_name) {
+    FILE *fp;
+    char command[128];
+    char buffer[128];
+    int pid = -1;
+
+    // Create a command to run 'pidof' for the specified program
+    snprintf(command, sizeof(command), "pidof %s", program_name);
+
+    // Open a pipe to execute the command and read the output
+    fp = popen(command, "r");
+    if (fp == NULL) {
+        perror("popen");
+	return -1;
+    }
+
+    // Read the output (should be a space-separated list of PIDs)
+    if (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        // Extract the first PID from the list
+        if (sscanf(buffer, "%d", &pid) == 1) {
+        }
+    }
+
+    // Close the pipe and check for errors
+    if (pclose(fp) == -1) {
+        perror("pclose");
+	return -1;
+    }
+
+    return pid;
+}
+
 void *RPM(uintptr_t address, ssize_t size) 
 {
     struct s_RPM args;
