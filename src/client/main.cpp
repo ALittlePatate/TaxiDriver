@@ -1,4 +1,4 @@
-#include "memory.h"
+#include "memory.hpp"
 #include <stdint.h>
 
 int main() {
@@ -11,9 +11,9 @@ int main() {
     
     uintptr_t addr = get_module("nsnake");
     printf("module : 0x%lx\n", addr);
-    WPM(addr + 0x1d71510, 200000, sizeof(int));
+    WPM<int>(addr + 0x1d71510, 1337);
     
-    int out = (int)RPM(addr + 0x1d71510, sizeof(int));
+    int out = RPM<int>(addr + 0x1d71510);
     printf("Value from RPM: %d\n", out);
     
     close_device();

@@ -1,5 +1,5 @@
-SRC =	main.c \
-	memory.c
+SRC =	main.cpp \
+	memory.cpp
 OBJ = $(SRC:.c=.o)
 NAME = Revird 
 CFLAGS = -Wall -Wextra -Wpedantic
@@ -7,7 +7,7 @@ CFLAGS = -Wall -Wextra -Wpedantic
 all:	$(NAME)
 
 $(NAME):	$(OBJ)
-	gcc $(SRC) $(CFLAGS) -o $(NAME)
+	g++ $(SRC) $(CFLAGS) -o $(NAME)
 	mv $(NAME) ../../.
 
 clean:

@@ -1,4 +1,4 @@
-#include "memory.h"
+#include "memory.hpp"
 #include "communication_struct.h"
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -8,7 +8,7 @@
 
 #define DEVICE_FILE "/dev/TaxiDriver"
 
-static int file_desc;
+int file_desc = 0;
 int open_device(void)
 {
     file_desc = open(DEVICE_FILE, O_RDWR);
@@ -56,40 +56,6 @@ int get_pid(const char *program_name) {
     return pid;
 }
 
-void *RPM(uintptr_t address, ssize_t size) 
-{
-    struct s_RPM args;
-    args.addr = address;
-    args.size = size;
-    args.out = 0;
-    args.out_addr = &args.out;
-    
-    int ret = ioctl(file_desc, IOCTL_RPM, &args);
-    if (ret < 0) {
-        perror("Revird: RPM failed.");
-        close(file_desc);
-        return 0;
-    }
-    return (void *)args.out;
-}
-
-void WPM(uintptr_t addr, uintptr_t value, ssize_t size)
-{
-    struct s_WPM args_wpm;
-    args_wpm.addr = addr;
-    args_wpm.size = size;
-    args_wpm.value = value;
-    int ret;
-    
-    ret = ioctl(file_desc, IOCTL_WPM, &args_wpm);
-    if (ret < 0) {
-        perror("Revird: WPM failed.");
-        close(file_desc);
-        return;
-    }
-    return;
-}
-
 int open_process(int pid)
 {
     int ret;
@@ -112,6 +78,6 @@ uintptr_t get_module(const char *mod)
         return -1;
     }
 
-    uintptr_t addr = (uintptr_t)RPM(0x69420, 0);
+    uintptr_t addr = RPM<uintptr_t>(0x69420);
     return addr;
 }
