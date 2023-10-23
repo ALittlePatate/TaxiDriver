@@ -1,13 +1,15 @@
 SRC =	main.cpp \
-	memory.cpp
+	memory.cpp \
+	imgui/*.cpp
 OBJ = $(SRC:.cpp=.o)
 NAME = Revird 
-CFLAGS = -Wall -Wextra -Wpedantic
+INC = -Iimgui/
+CFLAGS = -Wall -Wextra -Wpedantic -lSDL3 -lOpenGL
 
 all:	$(NAME)
 
 $(NAME):	$(OBJ)
-	g++ $(SRC) $(CFLAGS) -o $(NAME)
+	g++ $(SRC) $(CFLAGS) $(INC) -o $(NAME)
 	mv $(NAME) ../../.
 
 clean:

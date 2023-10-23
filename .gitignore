@@ -3,5 +3,6 @@
 Revird
 *.ko
 TaxiDriver.mod.c
+imgui.ini
 *.o
 *.cmd
