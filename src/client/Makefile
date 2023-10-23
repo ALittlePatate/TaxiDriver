@@ -1,5 +1,6 @@
 SRC =	main.cpp \
 	memory.cpp \
+	overlay.cpp \
 	imgui/*.cpp
 OBJ = $(SRC:.cpp=.o)
 NAME = Revird 

@@ -1,8 +1,9 @@
 #include "memory.hpp"
+#include "overlay.hpp"
 #include <stdint.h>
-#include "imgui/imgui.h"
 
 int main() {
+    run_overlay();
     /*
     if (!open_device())
 	return -1;
