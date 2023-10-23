@@ -1,6 +1,6 @@
 SRC =	main.cpp \
 	memory.cpp
-OBJ = $(SRC:.c=.o)
+OBJ = $(SRC:.cpp=.o)
 NAME = Revird 
 CFLAGS = -Wall -Wextra -Wpedantic
 
