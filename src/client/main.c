@@ -11,9 +11,9 @@ int main() {
     
     uintptr_t addr = get_module("nsnake");
     printf("module : 0x%lx\n", addr);
-    WPM(0x55a813479d70, 1337, sizeof(int));
+    WPM(addr + 0x1d71510, 200000, sizeof(int));
     
-    int out = (int)RPM(0x55a813479d70, sizeof(int));
+    int out = (int)RPM(addr + 0x1d71510, sizeof(int));
     printf("Value from RPM: %d\n", out);
     
     close_device();
