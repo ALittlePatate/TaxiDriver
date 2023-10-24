@@ -3,8 +3,7 @@
 #include <stdint.h>
 
 int main() {
-    run_overlay();
-    /*
+    //run_overlay();
     if (!open_device())
 	return -1;
 
@@ -20,6 +19,5 @@ int main() {
     printf("Value from RPM: %d\n", out);
     
     close_device();
-    */
     return 0;
 }
