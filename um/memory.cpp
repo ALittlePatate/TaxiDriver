@@ -1,12 +1,4 @@
 #include "memory.hpp"
-#include "communication_struct.h"
-#include <stdio.h>
-#include <sys/ioctl.h>
-#include <stdint.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-#define DEVICE_FILE "/dev/TaxiDriver"
 
 int file_desc = 0;
 int open_device(void)
@@ -35,7 +27,7 @@ int get_pid(const char *program_name) {
 
     // Open a pipe to execute the command and read the output
     fp = popen(command, "r");
-    if (fp == NULL) {
+    if (!fp) {
         perror("popen");
 	return -1;
     }
@@ -58,9 +50,7 @@ int get_pid(const char *program_name) {
 
 int open_process(int pid)
 {
-    int ret;
-    
-    ret = ioctl(file_desc, IOCTL_OPENPROC, &pid);
+    uint64_t ret = ioctl(file_desc, IOCTL_OPENPROC, &pid);
     if (ret < 0) {
         perror("Revird: openprocess failed.");
         close(file_desc);
@@ -71,7 +61,7 @@ int open_process(int pid)
 
 uintptr_t get_module(const char *mod)
 {
-    int ret = ioctl(file_desc, IOCTL_GETMODULE, mod);
+    uint64_t ret = ioctl(file_desc, IOCTL_GETMODULE, mod);
     if (ret < 0) {
         perror("Revird: getmodule failed.");
         close(file_desc);
@@ -81,3 +71,46 @@ uintptr_t get_module(const char *mod)
     uintptr_t addr = RPM<uintptr_t>(0x69420);
     return addr;
 }
+
+#if KERNEL_UPSTREAM == 0
+uintptr_t get_pid_module(int pid, const char *mod) {
+    struct s_PM pma;
+    pma.pid = pid;
+    pma.mod = mod;
+	
+    uint64_t ret = ioctl(file_desc, IOCTL_GETPIDMODULE, &pma);
+    if (ret < 0) {
+        perror("Revird: get_pid_module failed.");
+        close(file_desc);
+        return -1;
+    }
+
+    uintptr_t addr = RPM<uintptr_t>(0x69420);
+    return addr;
+}
+#endif
+
+#if KERNEL_UPSTREAM == 0 && TESTING==1
+uintptr_t VIRT_TO_PHYS(uintptr_t vaddr) {
+    uint64_t ret = ioctl(file_desc, IOCTL_VIRT_TO_PHYS, vaddr);
+    if (ret < 0) {
+        perror("VIRT_TO_PHYS failed.");
+        return 0;
+    }
+    // At this point, 'vaddr' contains the physical address.
+    return vaddr;
+}
+#endif
+
+#if KERNEL_UPSTREAM == 0 && TESTING==1
+uintptr_t PHYS_TO_VIRT(uintptr_t paddr) {
+    uint64_t ret = ioctl(file_desc, IOCTL_PHYS_TO_VIRT, &paddr);
+    if (ret < 0) {
+        perror("PHYS_TO_VIRT failed.");
+        return 0;
+    }
+
+    // At this point, 'paddr' contains the virtual address.
+    return paddr;
+}
+#endif

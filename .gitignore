@@ -1,8 +1,11 @@
-*.order
-*.symvers
-Revird
-*.ko
-TaxiDriver.mod.c
-imgui.ini
 *.o
 *.cmd
+*.symvers
+*.ko
+*.mod*
+*.order
+km/build/*
+um/main
+um/test/test_app
+um/test/libmath_module.so
+imgui.ini
