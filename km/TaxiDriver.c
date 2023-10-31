@@ -269,7 +269,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_num, unsigned lon
 	
     switch (ioctl_num) {
         case IOCTL_GETMODULE:
-            if (copy_from_user((void *)mod, (int *)arg, sizeof(char *)))
+            if (copy_from_user((void *)mod, (int *)arg, sizeof(char) * 256))
                 return -EFAULT;
 			return_value = list_process_modules(mod);
 			addr = return_value;
